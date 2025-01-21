@@ -3,6 +3,9 @@ from models.user.customer import Customer
 from services.authorization_service import AuthorizationService
 from utils.menu import show_guest_menu, show_admin_menu, show_customer_menu
 
+def print_invalid_choice():
+    print("Invalid choice. Please try again.")
+
 def main():
     auth_service = AuthorizationService()
     current_user = None
@@ -19,7 +22,7 @@ def main():
                 print("Goodbye!")
                 break
             else:
-                print("Invalid choice. Please try again.")
+                print_invalid_choice()
         else:
             if type(current_user) is Admin:
                 show_admin_menu()
@@ -41,7 +44,7 @@ def main():
                 elif choice == '8':
                     current_user = None
                 else:
-                    print("Invalid choice. Please try again.")
+                    print_invalid_choice()
             elif type(current_user) is Customer:
                 show_customer_menu()
                 choice = input("Choose an option: ").strip()
@@ -58,7 +61,7 @@ def main():
                 elif choice == '6':
                     current_user = None
                 else:
-                    print("Invalid choice. Please try again.")
+                    print_invalid_choice()
 
 if __name__ == "__main__":
     main()

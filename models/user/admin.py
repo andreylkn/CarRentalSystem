@@ -104,7 +104,7 @@ class Admin(User):
             return
 
         print(f"Car {car.id}: {car.make} {car.model} | Currently Available: {car.available}")
-        choice = input("Set availability to (A)vailable or (U)navailable? ").strip().lower()
+        choice = input("Set availability to available (A) or unavailable (U)? ").strip().lower()
         if choice == 'a':
             self._car_service.update_car(car_id, available=True)
             print("Car is now available.")
