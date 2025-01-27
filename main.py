@@ -53,7 +53,7 @@ def main():
                 elif choice == '2':
                     current_user.create_booking()
                 elif choice == '3':
-                    current_user.show_my_bookings()
+                    current_user.show_bookings()
                 elif choice == '4':
                     current_user.cancel_booking()
                 elif choice == '5':

@@ -1,5 +1,6 @@
 from models.user.user import User
-from services.database import CAR_ID, START_DATE, END_DATE, TOTAL_COST, STATUS, MAKE, MODEL
+from services.base_service import BaseService
+from services.database import CAR_ID, START_DATE, END_DATE, TOTAL_COST, STATUS, MAKE, MODEL, BOOKING_ID
 from utils.input_validation import input_int, input_date, yes_no
 
 class Customer(User):
@@ -35,18 +36,18 @@ class Customer(User):
             print("Failed to create booking. Please check dates and availability.")
         print("============================================")
 
-    def show_my_bookings(self):
+    def show_bookings(self):
         bookings = self._booking_service.get_user_bookings(self.user_id)
         if not bookings:
             print("You have no bookings.")
             return
         for b in bookings:
             print("-------------------------------------------------")
-            print(f"Booking ID: {b['booking_id']}")
+            print(f"Booking ID: {b[BOOKING_ID]}")
             print(f"Car: {b[MAKE]} {b[MODEL]} (Car ID: {b[CAR_ID]})")
             print(f"Period: {b[START_DATE]} to {b[END_DATE]}")
             print(f"Total Cost: ${b[TOTAL_COST]:.2f}")
-            print(f"Status: {b[STATUS]}")
+            print(f"Status: {self._booking_service.convert_booking_status_to_string(b[STATUS])}")
 
     def cancel_booking(self):
         booking_id = input_int("Enter the Booking ID to cancel: ", 1)

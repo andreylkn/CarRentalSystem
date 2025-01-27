@@ -2,10 +2,11 @@ from models.user.admin import Admin
 from models.user.customer import Customer
 from services.base_service import BaseService
 from services.database import ROLE, USER_ID, USERNAME, PASSWORD
+from utils.input_validation import yes_no
 import bcrypt
 
-ADMIN_ROLE = 'admin'
-CUSTOMER_ROLE = 'customer'
+ADMIN_ROLE = 1 #admin
+CUSTOMER_ROLE = 2 #customer
 
 class AuthorizationService(BaseService):
     def __init__(self):
@@ -28,8 +29,8 @@ class AuthorizationService(BaseService):
         username = input("Choose a username: ")
         password = input("Choose a password: ")
 
-        role_choice = input("Are you an admin or customer? (admin/customer): ").strip().lower()  # TODO Y/N
-        role = ADMIN_ROLE if role_choice == ADMIN_ROLE else CUSTOMER_ROLE
+        is_admin = yes_no("Are you an admin?: ")
+        role = ADMIN_ROLE if is_admin == True else CUSTOMER_ROLE
         if self.__register(username, password, role):
             print("User registered successfully.")
         else:

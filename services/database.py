@@ -1,7 +1,7 @@
 import configparser
 import mysql.connector
 
-# Define a constant for sample car data
+# Sample car data
 SAMPLE_CARS = [
     ("Toyota", "Corolla", 2018, 25000, True, 2, 14),
     ("Honda", "Civic", 2019, 20000, True, 1, 10),
@@ -17,13 +17,13 @@ SAMPLE_CARS = [
 
 CONFIG_PATH = "config.ini"
 
-# Define constants for a user table
+# Constants for a user table
 ROLE = 'role'
 USER_ID = 'user_id'
 USERNAME = 'username'
 PASSWORD = 'password'
 
-# Define constants for a car table
+# Constants for a car table
 CAR_ID = "car_id"
 MAKE = "make"
 MODEL = "model"
@@ -33,7 +33,7 @@ AVAILABLE = "available"
 MIN_RENT_PERIOD = "min_rent_period"
 MAX_RENT_PERIOD = "max_rent_period"
 
-# Define constants for a booking table
+# Constants for a booking table
 BOOKING_ID = 'booking_id'
 START_DATE = 'start_date'
 END_DATE = 'end_date'
@@ -44,7 +44,7 @@ class Database:
     _instance = None
 
     def __new__(cls):
-        #Singleton pattern
+        #Singleton
         if cls._instance is None:
             cls._instance = super(Database, cls).__new__(cls)
         return cls._instance
@@ -71,14 +71,7 @@ class Database:
         self.port = self.config.getint('database', 'port')
 
     def _initialize_tables(self):
-        """
-        Ensures that the configured database and the required tables exist.
-        If the database does not exist, it is created.
-        Then, all necessary tables are created if they don't already exist.
-        If the cars table is empty after creation, it will be seeded with sample data.
-        """
-
-        # Step 1: Connect without selecting a DB to create/check the database
+        # Connect without selecting a DB to create/check the database
         self.connect(database=None)
         cursor = self.connection.cursor()
 
@@ -86,29 +79,24 @@ class Database:
         cursor.execute("SHOW DATABASES LIKE %s", (self.database_name,))
         db_exists = cursor.fetchone() is not None
 
+        # Create the database if it doesn't exist
         if not db_exists:
-            # Create the database if it doesn't exist
             cursor.execute(f"CREATE DATABASE `{self.database_name}`")
             print(f"Database '{self.database_name}' created successfully.")
 
-        # Step 2: Connect to the database
+        # Connect to the database
         self.connect(self.database_name)
         cursor = self.connection.cursor()
 
-        # Step 3: Create required tables if they do not exist
         self._create_tables(cursor)
-
-        # Step 4: Seed the cars table if it is empty
         self._seed_cars_if_empty(cursor)
 
         self.connection.commit()
         print("Database initialization completed. All necessary tables exist and the cars table is populated if it was empty.")
 
     def connect(self, database=None):
-        """Connect to the MySQL server. If `database` is None, connect without selecting a DB."""
         # Close any existing connection
-        if self.connection and self.connection.is_connected():
-            self.connection.close()
+        self.close()
 
         self.connection = mysql.connector.connect(
             host=self.host,
@@ -119,13 +107,11 @@ class Database:
         )
 
     def get_connection(self):
-        """Ensure we have a connection to the configured database, connecting if needed."""
         if self.connection is None or not self.connection.is_connected():
             self.connect(self.database_name)
         return self.connection
 
     def close(self):
-        """Close the database connection if it is open."""
         if self.connection and self.connection.is_connected():
             self.connection.close()
 
@@ -140,7 +126,7 @@ class Database:
           `user_id` INT AUTO_INCREMENT PRIMARY KEY,
           `username` VARCHAR(50) UNIQUE NOT NULL,
           `password` VARCHAR(255) NOT NULL,
-          `role` ENUM('admin','customer') NOT NULL
+          `role` BIT(10) NOT NULL
         ) ENGINE=INNODB;
         """)
 
@@ -167,18 +153,16 @@ class Database:
           `start_date` DATE,
           `end_date` DATE,
           `total_cost` DECIMAL(10,2),
-          `status` ENUM('pending','approved','rejected') DEFAULT 'pending',
+          `status` BIT(10),
           FOREIGN KEY (`car_id`) REFERENCES `cars`(`car_id`) ON DELETE CASCADE,
           FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
         ) ENGINE=INNODB;
         """)
 
     def _seed_cars_if_empty(self, cursor):
-        """Check if the cars table is empty and, if so, insert sample data."""
         cursor.execute("SELECT COUNT(*) AS count FROM cars")
         result = cursor.fetchone()
         if result and result[0] == 0:
-            # Table is empty, insert sample cars
             cursor.executemany("""
             INSERT INTO cars (make, model, year, mileage, available, min_rent_period, max_rent_period)
             VALUES (%s, %s, %s, %s, %s, %s, %s)

@@ -58,8 +58,7 @@ class CarService(BaseService):
         try:
             cursor.execute("SELECT * FROM cars")
             rows = cursor.fetchall()
-            return [Car(row[CAR_ID], row[MAKE], row[MODEL], row[YEAR], row[MILEAGE], row[AVAILABLE], row[MIN_RENT_PERIOD], row[MAX_RENT_PERIOD])
-                    for row in rows]
+            return [self._create_car_object(row) for row in rows]
         except Exception as e:
             print("Error fetching cars:", str(e))
             return []
@@ -70,8 +69,7 @@ class CarService(BaseService):
         try:
             cursor.execute("SELECT * FROM cars WHERE available = TRUE")
             rows = cursor.fetchall()
-            return [Car(row[CAR_ID], row[MAKE], row[MODEL], row[YEAR], row[MILEAGE], row[AVAILABLE], row[MIN_RENT_PERIOD], row[MAX_RENT_PERIOD])
-                    for row in rows]
+            return [self._create_car_object(row) for row in rows]
         except Exception as e:
             print("Error fetching available cars:", str(e))
             return []
@@ -80,7 +78,12 @@ class CarService(BaseService):
         conn = self._get_db_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM cars WHERE car_id=%s", (car_id,))
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        if not row:
+            return None
+        else:
+            return self._create_car_object(row)
+
 
     def get_available_car_by_id(self, car_id):
         conn = self._get_db_connection()
@@ -90,4 +93,7 @@ class CarService(BaseService):
         if not row:
             return None
         else:
-            return Car(row[CAR_ID], row[MAKE], row[MODEL], row[YEAR], row[MILEAGE], row[AVAILABLE], row[MIN_RENT_PERIOD], row[MAX_RENT_PERIOD])
+            return self._create_car_object(row)
+
+    def _create_car_object(self, row):
+        return Car(row[CAR_ID], row[MAKE], row[MODEL], row[YEAR], row[MILEAGE], row[AVAILABLE], row[MIN_RENT_PERIOD], row[MAX_RENT_PERIOD])

@@ -1,4 +1,5 @@
 from models.user.user import User
+from services.booking_service import APPROVED_STATUS, REJECTED_STATUS
 from services.database import MODEL, MAKE, YEAR, MILEAGE, MIN_RENT_PERIOD, MAX_RENT_PERIOD, BOOKING_ID, START_DATE, \
     END_DATE, TOTAL_COST, CAR_ID, USERNAME, USER_ID, STATUS
 from utils.input_validation import input_int, input_str
@@ -46,7 +47,7 @@ class Admin(User):
 
         field_name = field_map[choice]
 
-        # Prompt for new value, with type checks
+        # Request for new value, with type checks
         if field_name in [YEAR, MILEAGE, MIN_RENT_PERIOD, MAX_RENT_PERIOD]:
             new_value = input_int(f"Enter new {field_name.replace('_', ' ')}: ")
         else:
@@ -59,7 +60,6 @@ class Admin(User):
         self._car_service.delete_car(car_id)
 
     def manage_bookings(self):
-        # Enhanced details: Display car make/model and username of customer
         pending_bookings = self._booking_service.get_pending_bookings()
         if not pending_bookings:
             print("No pending bookings.")
@@ -74,14 +74,13 @@ class Admin(User):
             print("Current Status: pending")
             decision = input("Approve (A) or Reject (R)? ").strip().lower()
             if decision == 'a':
-                self._booking_service.update_booking_status(b[BOOKING_ID], 'approved')
+                self._booking_service.update_booking_status(b[BOOKING_ID], APPROVED_STATUS)
             elif decision == 'r':
-                self._booking_service.update_booking_status(b[BOOKING_ID], 'rejected')
+                self._booking_service.update_booking_status(b[BOOKING_ID], REJECTED_STATUS)
             else:
                 print("Invalid choice. Skipping this booking.")
 
     def show_all_bookings(self):
-        # Displays all bookings (approved, pending, rejected) with details
         all_bookings = self._booking_service.get_all_bookings()
         if not all_bookings:
             print("No bookings found.")
@@ -93,10 +92,9 @@ class Admin(User):
             print(f"Customer: {bk[USERNAME]} (User ID: {bk[USER_ID]})")
             print(f"Period: {bk[START_DATE]} to {bk[END_DATE]}")
             print(f"Total Cost: ${bk[TOTAL_COST]:.2f}")
-            print(f"Status: {bk[STATUS]}")
+            print(f"Status: {self._booking_service.convert_booking_status_to_string(bk[STATUS])}")
 
     def manage_car_availability(self):
-        # Allows admin to toggle a car's availability
         car_id = input_int("Enter the Car ID to update availability: ", 1)
         car = self._car_service.get_car_by_id(car_id)
         if not car:
