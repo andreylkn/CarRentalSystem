@@ -126,7 +126,7 @@ class Database:
           `user_id` INT AUTO_INCREMENT PRIMARY KEY,
           `username` VARCHAR(50) UNIQUE NOT NULL,
           `password` VARCHAR(255) NOT NULL,
-          `role` BIT(10) NOT NULL
+          `role` TINYINT NOT NULL
         ) ENGINE=INNODB;
         """)
 
@@ -153,7 +153,7 @@ class Database:
           `start_date` DATE,
           `end_date` DATE,
           `total_cost` DECIMAL(10,2),
-          `status` BIT(10),
+          `status` TINYINT,
           FOREIGN KEY (`car_id`) REFERENCES `cars`(`car_id`) ON DELETE CASCADE,
           FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
         ) ENGINE=INNODB;
